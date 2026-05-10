@@ -13,10 +13,7 @@ export function getClientKey(req: Request, normalizeIp: IpNormalizer): string {
   }
 
   if (typeof forwardedFor === "string") {
-    return normalizeClientIp(
-      forwardedFor.split(",")[0]?.trim() || req.ip || req.socket.remoteAddress,
-      normalizeIp,
-    );
+    return normalizeClientIp(forwardedFor.split(",")[0]?.trim() || req.ip || req.socket.remoteAddress, normalizeIp);
   }
 
   return normalizeClientIp(req.ip || req.socket.remoteAddress, normalizeIp);

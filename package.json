@@ -5,13 +5,19 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch index.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "bun run format:check && bun run typecheck",
+    "prepare": "husky",
     "start": "bun index.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/config": "^4.4.0",
-    "@types/express": "^5.0.6"
+    "@types/express": "^5.0.6",
+    "husky": "^9.1.7",
+    "prettier": "^3.8.3"
   },
   "peerDependencies": {
     "typescript": "^5"
