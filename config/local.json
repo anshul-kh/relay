@@ -1,0 +1,13 @@
+{
+  "server": {
+    "secure": false,
+    "cors": "*",
+    "https": {
+      "pubKey": "",
+      "pvtKey": ""
+    }
+  },
+  "storage": {
+    "projectsDirectory": "/home/ansh/Desktop/relay/projects"
+  }
+}

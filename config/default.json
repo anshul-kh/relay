@@ -1,0 +1,24 @@
+{
+  "app": {
+    "name": "relay",
+    "port": 3000
+  },
+  "server": {
+    "cache": true,
+    "secure": true,
+    "cors": "*",
+    "rateLimit": {
+      "windowMs": 60000,
+      "max": 100,
+      "standardHeaders": true,
+      "legacyHeaders": false
+    },
+    "https": {
+      "pubKey": "/etc/relay/certs/fullchain.pem",
+      "pvtKey": "/etc/relay/certs/privkey.pem"
+    }
+  },
+  "storage": {
+    "projectsDirectory": "/var/lib/relay/projects"
+  }
+}
