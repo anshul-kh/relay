@@ -1,11 +1,14 @@
 import NodeCache from "node-cache";
 import type { CacheKey } from "../types/cache";
+import { APP_CONTEXT } from "./context";
 
 export const cache = new NodeCache({
   checkperiod: 120,
   stdTTL: 300,
   useClones: false,
 });
+
+const appConfig = APP_CONTEXT?.appConfig;
 
 /**
  * Stores a value in the shared application cache.
@@ -14,7 +17,7 @@ export const cache = new NodeCache({
  * @param value Value to cache.
  * @param ttlSeconds Optional TTL in seconds. Uses the default TTL when omitted.
  */
-export function setCache<T>(key: CacheKey, value: T, ttlSeconds?: number): boolean {
+export function setCache<T>(key: CacheKey, value: T, ttlSeconds: number = appConfig?.cache?.ttl): boolean {
   if (ttlSeconds === undefined) {
     return cache.set(key, value);
   }

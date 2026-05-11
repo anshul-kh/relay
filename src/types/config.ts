@@ -14,6 +14,7 @@ export type AppConfig = {
   app: {
     name: string;
     port: number;
+    domain: string;
   };
   server: {
     cache: boolean;
@@ -24,5 +25,12 @@ export type AppConfig = {
   };
   storage: {
     projectsDirectory: string;
+  };
+  hasura: {
+    endpoint: string;
+    adminSecret: string;
+  };
+  cache: {
+    ttl: number;
   };
 };

@@ -1,15 +1,14 @@
-import config from "config";
 import express, { type Express, type NextFunction, type Request, type Response } from "express";
 import { ipKeyGenerator, rateLimit } from "express-rate-limit";
 import { existsSync, readFileSync } from "node:fs";
 import { createServer as createHttpServer } from "node:http";
 import { createServer as createHttpsServer, type Server as HttpsServer } from "node:https";
 import { getClientKey } from "./helpers/client";
-import type { AppConfig } from "./types/config";
 import type { RuntimeServer } from "./types/server";
+import { APP_CONTEXT } from "./lib/context";
+import { serveStaticBuilds } from "./middlewares";
 
-const appConfig = config.util.toObject() as AppConfig;
-
+const { appConfig } = APP_CONTEXT;
 /**
  * Creates the Express application and registers global middleware/routes.
  */
@@ -34,6 +33,9 @@ export function createApp(): Express {
       timestamp: new Date().toISOString(),
     });
   });
+
+  // catch-all route for  serving static build files
+  app.use(serveStaticBuilds);
 
   return app;
 }
@@ -89,7 +91,7 @@ function createSecureServer(app: Express): HttpsServer {
  */
 function applyCorsHeaders(req: Request, res: Response, next: NextFunction): void {
   res.header("Access-Control-Allow-Origin", appConfig.server.cors);
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Methods", "GET,OPTIONS,HEAD");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
