@@ -3,8 +3,10 @@ import { handleBuildServe } from "./serve";
 
 export function serveStaticBuilds(req: Request, res: Response) {
   if (!["GET", "HEAD"].includes(req.method)) {
-    return res.send(405).end();
+    return res.set("Allow", "GET, HEAD").sendStatus(405).end();
   }
 
   return handleBuildServe(req, res);
 }
+
+export { applySecurityHeaders, applyStaticFileHeaders } from "./headers";

@@ -1,11 +1,9 @@
 import type { Response } from "express";
 import fs from "node:fs";
-import mime from "mime-types";
+import { applyStaticFileHeaders } from "../middlewares";
 
 export function streamFile(filePath: string, res: Response): void {
-  const mimeType = mime.lookup(filePath) || "application/octet-stream";
-
-  res.setHeader("Content-Type", mimeType);
+  applyStaticFileHeaders(filePath, res);
 
   const stream = fs.createReadStream(filePath);
 

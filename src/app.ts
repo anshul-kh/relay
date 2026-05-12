@@ -6,7 +6,7 @@ import { createServer as createHttpsServer, type Server as HttpsServer } from "n
 import { getClientKey } from "./helpers/client";
 import type { RuntimeServer } from "./types/server";
 import { APP_CONTEXT } from "./lib/context";
-import { serveStaticBuilds } from "./middlewares";
+import { applySecurityHeaders, serveStaticBuilds } from "./middlewares";
 
 const { appConfig } = APP_CONTEXT;
 /**
@@ -18,6 +18,7 @@ export function createApp(): Express {
   app.disable("x-powered-by");
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(applySecurityHeaders);
   app.use(applyCorsHeaders);
   app.use(createRateLimiter());
 
