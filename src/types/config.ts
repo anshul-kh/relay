@@ -25,6 +25,7 @@ export type AppConfig = {
   };
   storage: {
     projectsDirectory: string;
+    uploadsDirectory: string;
   };
   hasura: {
     endpoint: string;

@@ -20,7 +20,8 @@
     }
   },
   "storage": {
-    "projectsDirectory": "/var/lib/relay/projects"
+    "projectsDirectory": "/var/lib/relay/projects",
+    "uploadsDirectory": "/var/lib/relay/uploads"
   },
   "hasura": {
     "endpoint": "http://localhost:8080/v1/graphql",

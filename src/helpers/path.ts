@@ -98,3 +98,14 @@ export async function resolveFilePath(filePath: string, slug: string, isSPA: boo
     status: 404,
   };
 }
+
+export function createDirectoryIfNotExists(dirPath: string): void {
+  try {
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+  } catch (err) {
+    console.error(`Error creating directory: ${dirPath}`, err);
+    throw err;
+  }
+}
