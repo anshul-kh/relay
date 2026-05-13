@@ -7,6 +7,7 @@ export const GET_PROJECT_QUERY = `
             metadata
             project_slug
             seo_data
+            user_id
         }
     }
 `;

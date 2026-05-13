@@ -1,4 +1,4 @@
-import type { Request } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { APP_CONTEXT } from "../../lib/context";
 import multer, { type FileFilterCallback } from "multer";
 import path from "path";
@@ -30,4 +30,20 @@ const fileFilter: multer.Options["fileFilter"] = (_req: Request, file: Express.M
   }
 };
 
-export const upload = multer({ storage, fileFilter, limits: { fileSize: 20 * 1024 * 1024, files: 1 } }); // 1MB limit
+export const upload = multer({ storage, fileFilter, limits: { fileSize: 20 * 1024 * 1024, files: 1 } });
+
+export function handleBuildUpload(req: Request, res: Response, next: NextFunction) {
+  upload.single("file")(req, res, (error) => {
+    if (!error) {
+      next();
+      return;
+    }
+
+    const message =
+      error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE"
+        ? "File size exceeds the allowed limit."
+        : error.message || "Failed to upload file";
+
+    res.status(400).json({ status: false, message, data: null });
+  });
+}

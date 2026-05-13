@@ -29,5 +29,8 @@
   },
   "cache": {
     "ttl": 360
+  },
+  "uploads": {
+    "maxProjectLimit": 5
   }
 }

@@ -31,7 +31,14 @@ export type AppConfig = {
     endpoint: string;
     adminSecret: string;
   };
+  auth?: {
+    bypassTokenCheck: boolean;
+    userId: string;
+  };
   cache: {
     ttl: number;
+  };
+  uploads: {
+    maxProjectLimit: number;
   };
 };

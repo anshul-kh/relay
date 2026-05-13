@@ -8,9 +8,10 @@ import type { RuntimeServer } from "./types/server";
 import { APP_CONTEXT } from "./lib/context";
 import { applySecurityHeaders, serveStaticBuilds } from "./middlewares";
 import { createDirectoryIfNotExists } from "./helpers/path";
-import { upload } from "./middlewares/upload";
+import { handleBuildUpload } from "./middlewares/upload";
+import { type AuthenticatedRequest, validateUpload, verifyUser } from "./middlewares/upload/validation";
 import { processBuildUpload } from "./lib/processBuild";
-import { stripProjectSlug } from "./helpers/project";
+import { addOrUpdateUploadRecord, UPLOAD_MESSAGE, UPLOAD_STATUS, UPLOAD_TYPE } from "./utils/uploads";
 
 const { appConfig } = APP_CONTEXT;
 /**
@@ -39,28 +40,74 @@ export function createApp(): Express {
     });
   });
 
-  app.use("/upload", upload.single("file"), async (req: Request, res: Response) => {
-    const slug = req.body.slug;
+  app.use(
+    "/upload",
+    verifyUser,
+    handleBuildUpload,
+    validateUpload,
+    async (req: AuthenticatedRequest, res: Response) => {
+      const slug = req.body.slug;
+      const type = req.body.type || UPLOAD_TYPE.BUILD;
 
-    if (!slug) {
-      return res.status(400).json({ success: false, message: "Invalid hostname" });
-    }
+      if (!slug) {
+        return res.status(400).json({ status: false, message: "Invalid project", data: null });
+      }
 
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: "No file uploaded" });
-    }
+      if (!req.file || !req.user?.id) {
+        return res.status(400).json({ status: false, message: "No file uploaded", data: null });
+      }
 
-    const zipPath = req.file.path;
+      const zipPath = req.file.path;
+      const uploadRecord = {
+        ref: slug,
+        type,
+        filePath: zipPath,
+        userId: req.user.id,
+      };
 
-    try {
-      await processBuildUpload(slug, zipPath);
+      try {
+        await addOrUpdateUploadRecord({
+          ...uploadRecord,
+          status: UPLOAD_STATUS.UPLOADED,
+          message: UPLOAD_MESSAGE.UPLOADED,
+        });
+        await addOrUpdateUploadRecord({
+          ...uploadRecord,
+          status: UPLOAD_STATUS.PROCESSING,
+          message: UPLOAD_MESSAGE.PROCESSING,
+        });
 
-      res.status(200).json({ success: true, message: "File uploaded successfully", filename: req.file.filename });
-    } catch (error) {
-      console.error("Failed to process uploaded build", error);
-      res.status(500).json({ success: false, message: "Failed to process uploaded build" });
-    }
-  });
+        const uploadCB = () =>
+          addOrUpdateUploadRecord({
+            ...uploadRecord,
+            status: UPLOAD_STATUS.PROCESSED,
+            message: UPLOAD_MESSAGE.PROCESSED,
+          });
+
+        processBuildUpload(slug, zipPath, uploadCB);
+
+        res.status(200).json({
+          status: true,
+          message: "File uploaded successfully",
+          data: {
+            filename: req.file.filename,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to process uploaded build", error);
+        try {
+          await addOrUpdateUploadRecord({
+            ...uploadRecord,
+            status: UPLOAD_STATUS.ERROR,
+            message: UPLOAD_MESSAGE.ERROR,
+          });
+        } catch (uploadRecordError) {
+          console.error("Failed to update upload record", uploadRecordError);
+        }
+        res.status(500).json({ status: false, message: "Failed to process uploaded build", data: null });
+      }
+    },
+  );
 
   // catch-all route for  serving static build files
   app.use(serveStaticBuilds);
